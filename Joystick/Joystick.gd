@@ -7,51 +7,52 @@ var is_working := false
 
 # The joystick output.
 var output := Vector2.ZERO
+var pressed := false
 
 # FIXED: The joystick doesn't move.
 # DYNAMIC: Every time the joystick area is pressed, the joystick position is set on the touched position.
 # FOLLOWING: If the finger moves outside the joystick background, the joystick follows it.
 enum JoystickMode {FIXED, DYNAMIC, FOLLOWING}
 
-export(JoystickMode) var joystick_mode := JoystickMode.FIXED
+@export var joystick_mode: JoystickMode = JoystickMode.FIXED
 
 # REAL: return a vector with a lenght beetween 0 (deadzone) and 1; useful for implementing different velocity or acceleration.
 # NORMALIZED: return a normalized vector.
 enum VectorMode {REAL, NORMALIZED}
 
-export(VectorMode) var vector_mode := VectorMode.REAL
+@export var vector_mode: VectorMode = VectorMode.REAL
 
 # The color of the button when the joystick is in use.
-export(Color) var _pressed_color := Color.gray
+@export var _pressed_color: Color = Color.GRAY
 
 # The number of directions, e.g. a D-pad is joystick with 4 directions, keep 0 for a free joystick.
-export(int, 0, 12) var directions := 0
+@export_range(0, 12) var directions: int = 0
 
 # It changes the angle of symmetry of the directions.
 #export(int, -180, 180) 
-export var symmetry_angle := 90
+@export var symmetry_angle := 90
 
 #If the handle is inside this range, in proportion to the background size, the output is zero.
-export(float, 0, 0.5) var dead_zone := 0.1
+@export_range(0.0, 0.5) var dead_zone := 0.1
 
 #The max distance the handle can reach, in proportion to the background size.
-export(float, 0.5, 2) var clamp_zone := 1.0
+@export_range(0.5, 2) var clamp_zone := 1.0
 
 #VISIBILITY_ALWAYS = Always visible.
 #VISIBILITY_TOUCHSCREEN_ONLY = Visible on touch screens only.
 enum VisibilityMode {ALWAYS , TOUCHSCREEN_ONLY }
 
-export(VisibilityMode) var visibility_mode := VisibilityMode.ALWAYS
+@export var visibility_mode: VisibilityMode = VisibilityMode.ALWAYS
 
-onready var _background := $Background
-onready var _handle := $Background/Handle
-onready var _original_color : Color = _handle.self_modulate
-onready var _original_position : Vector2 = _background.rect_position
+@onready var _background := $Background
+@onready var _handle := $Background/Handle
+@onready var _original_color : Color = _handle.self_modulate
+@onready var _original_position : Vector2 = _background.rect_position
 
 var _touch_index :int = -1
 
 func _ready() -> void:
-	if not OS.has_touchscreen_ui_hint() and visibility_mode == VisibilityMode.TOUCHSCREEN_ONLY:
+	if not OS.has_feature('mobile') and visibility_mode == VisibilityMode.TOUCHSCREEN_ONLY:
 		hide()
 
 func _touch_started(event: InputEventScreenTouch) -> bool:
@@ -72,9 +73,11 @@ func _input(event: InputEvent) -> void:
 				_touch_index = event.index
 				_handle.self_modulate = _pressed_color
 				_update_joystick(event.position)
+				pressed = true
 			
 		elif _touch_ended(event):
 			_reset()
+			pressed = false
 	
 	elif event is InputEventScreenDrag and _touch_index == event.index:
 		_update_joystick(event.position)
@@ -95,9 +98,9 @@ func _reset():
 	_background.rect_position = _original_position
 	_reset_handle()
 
-func _is_inside_control_rect(global_position: Vector2, control: Control) -> bool:
-	var x: bool = global_position.x > control.rect_global_position.x and global_position.x < control.rect_global_position.x + (control.rect_size.x * control.rect_scale.x)
-	var y: bool = global_position.y > control.rect_global_position.y and global_position.y < control.rect_global_position.y + (control.rect_size.y * control.rect_scale.y)
+func _is_inside_control_rect(pos: Vector2, control: Control) -> bool:
+	var x: bool = pos.x > control.rect_global_position.x and pos.x < control.rect_global_position.x + (control.rect_size.x * control.rect_scale.x)
+	var y: bool = pos.y > control.rect_global_position.y and pos.y < control.rect_global_position.y + (control.rect_size.y * control.rect_scale.y)
 	return x and y
 
 func _is_inside_control_circle(global_position: Vector2, control: Control) -> bool:
@@ -141,7 +144,7 @@ func _update_joystick(event_position: Vector2):
 			output = vector.normalized()
 			_center_control(_handle, output * clamp_size + center)
 		elif vector_mode == VectorMode.REAL:
-			var clamped_vector := vector.clamped(clamp_size)
+			var clamped_vector := vector.limit_length(clamp_size)
 			output = vector.normalized() * (clamped_vector.length() - dead_size) / (clamp_size - dead_size)
 			_center_control(_handle, clamped_vector + center)
 		

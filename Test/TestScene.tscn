@@ -1,52 +1,42 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=5 format=3 uid="uid://cmer37ex0wd6i"]
 
-[ext_resource path="res://Joystick/Joystick.tscn" type="PackedScene" id=1]
-[ext_resource path="res://Test/Arrow.png" type="Texture" id=2]
-[ext_resource path="res://Test/Player.gd" type="Script" id=3]
+[ext_resource type="PackedScene" uid="uid://ugvuberbpdwa" path="res://Joystick/Joystick.tscn" id="1"]
+[ext_resource type="Texture2D" uid="uid://dy4g2k734eypn" path="res://Test/Arrow.png" id="2"]
+[ext_resource type="Script" path="res://Test/Player.gd" id="3"]
 
-[sub_resource type="RectangleShape2D" id=1]
-extents = Vector2( 33.5625, 23.1896 )
+[sub_resource type="RectangleShape2D" id="1"]
+size = Vector2(67.125, 46.3792)
 
 [node name="Node" type="Node"]
 
 [node name="UI" type="Control" parent="."]
-margin_right = 40.0
-margin_bottom = 40.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="JoystickLeft" parent="UI" instance=ExtResource( 1 )]
-anchor_top = 15.0
-anchor_bottom = 15.0
-margin_top = -500.0
-margin_right = 500.0
-margin_bottom = -6.10352e-05
-rect_scale = Vector2( 1.25, 1.25 )
+[node name="JoystickLeft" parent="UI" instance=ExtResource( "1" )]
+offset_left = 92.0
+offset_top = 295.0
+offset_right = 392.0
+offset_bottom = 595.0
 
-[node name="JoystickRight" parent="UI" instance=ExtResource( 1 )]
-anchor_left = 25.0
-anchor_top = 15.0
-anchor_right = 25.0
-anchor_bottom = 15.0
-margin_left = -500.0
-margin_top = -500.0
-margin_right = 6.10352e-05
-rect_scale = Vector2( 0.75, 0.75 )
+[node name="JoystickRight" parent="UI" instance=ExtResource( "1" )]
+offset_left = 572.0
+offset_top = 247.0
+offset_right = 872.0
+offset_bottom = 547.0
+rect_scale = Vector2(0.75, 0.75)
 
 [node name="Node2D" type="Node2D" parent="."]
 
-[node name="KinematicBody2D" type="KinematicBody2D" parent="Node2D"]
-position = Vector2( 500, 200 )
-script = ExtResource( 3 )
+[node name="KinematicBody2D" type="CharacterBody2D" parent="Node2D"]
+position = Vector2(500, 200)
+script = ExtResource( "3" )
 joystickLeftPath = NodePath("../../UI/JoystickLeft")
 joystickRightPath = NodePath("../../UI/JoystickRight")
 
-[node name="Sprite" type="Sprite" parent="Node2D/KinematicBody2D"]
-texture = ExtResource( 2 )
+[node name="Sprite" type="Sprite2D" parent="Node2D/KinematicBody2D"]
+texture = ExtResource( "2" )
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D/KinematicBody2D"]
-shape = SubResource( 1 )
-
-[editable path="UI/JoystickLeft"]
-[editable path="UI/JoystickRight"]
+shape = SubResource( "1" )
